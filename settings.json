@@ -1,0 +1,17 @@
+{
+  "fonts": {
+    "LARGE_FONT_STYLE": ["Arial", 40, "bold"],
+    "SMALL_FONT_STYLE": ["Arial", 16],
+    "DIGITS_FONT_STYLE": ["Arial", 24, "bold"],
+    "DEFAULT_FONT_STYLE": ["Arial", 18],
+    "OPERATORS_FONT_STYLE": ["Arial", 24]
+  },
+  "colors": {
+    "SPECIAL_CHARACTERS": "#44475a",
+    "DIGITS": "#44475a",
+    "EQUALS": "#0097e6",
+    "DISPLAY_LABELS": "#282a36",
+    "LABEL_COLOR": "#f8f8f2",
+    "CLEAR_COLOR": "#FF5733"
+  }
+}
