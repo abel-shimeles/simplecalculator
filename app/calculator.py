@@ -1,6 +1,8 @@
 import math
 import tkinter as tk
-from get_settings import get_settings
+from utils.get_settings import get_settings
+from utils.split_strings import split_strings
+
 
 class Calculator:
     def __init__(self):
@@ -8,10 +10,12 @@ class Calculator:
         self.window.geometry("500x677")
         self.window.resizable(0, 0)
         self.window.title("Calculator")
+        icon = tk.PhotoImage(file="favicon.png")
+        self.window.iconphoto(True, icon)
         self.settings = get_settings()
 
         self.total_expression = ""
-        self.current_expression = ""
+        self.current_expression = "0"
         self.display_frame = self.create_display_frame()
 
         self.total_label, self.label = self.create_display_labels()
@@ -46,7 +50,7 @@ class Calculator:
 
     def bind_keys(self):
         self.window.bind("<Return>", lambda event: self.evaluate())
-        
+
         for key in self.digits:
             self.window.bind(
                 str(key), lambda event, digit=key: self.add_to_expression(digit)
@@ -110,12 +114,18 @@ class Calculator:
         return total_label, label
 
     def create_display_frame(self):
-        frame = tk.Frame(self.window, height=221, bg=self.settings["display_labels_color"])
+        frame = tk.Frame(
+            self.window, height=221, bg=self.settings["display_labels_color"]
+        )
         frame.pack(expand=True, fill="both")
         return frame
 
     def add_to_expression(self, value):
-        self.current_expression += str(value)
+        if self.current_expression[0] == "0":
+            self.current_expression = ""
+            self.current_expression += str(value)
+        else:
+            self.current_expression += str(value)
         self.update_label()
 
     def create_digit_buttons(self):
@@ -134,10 +144,10 @@ class Calculator:
     def append_operator(self, operator):
         self.current_expression += operator
         self.total_expression += self.current_expression
-        self.current_expression = ""
+        self.current_expression, removed_operator = split_strings(self.total_expression)
         self.update_total_label()
         self.update_label()
-
+        # self.current_expression = "0"
     def create_operator_buttons(self):
         i = 2
         for operator, symbol in self.operations.items():
@@ -154,7 +164,7 @@ class Calculator:
             i += 1
 
     def clear(self):
-        self.current_expression = ""
+        self.current_expression = "0"
         self.total_expression = ""
         self.update_label()
         self.update_total_label()
@@ -193,7 +203,10 @@ class Calculator:
 
     def sqrt(self):
         try:
-            self.current_expression = str(eval(f"{self.current_expression}**0.5"))
+            if eval(self.current_expression) >= 0: 
+                self.current_expression = str(eval(f"{self.current_expression}**0.5"))
+            else:
+                self.current_expression = "Error"
         except Exception as e:
             self.current_expression = "Error"
         finally:
@@ -216,7 +229,6 @@ class Calculator:
         self.update_total_label()
         try:
             self.current_expression = str(eval(self.total_expression))
-
             self.total_expression = ""
         except Exception as e:
             self.current_expression = "Error"
@@ -256,7 +268,12 @@ class Calculator:
         self.label.config(text=self.current_expression[:12])
 
     def backspace(self):
-        self.current_expression = self.current_expression[:-1]
+        if len(self.current_expression) > 1 and self.current_expression != "0" and self.current_expression != "Error":
+            self.current_expression = self.current_expression[:-1]
+        elif self.current_expression == "0" or len(self.current_expression) <= 1 and self.current_expression != "Error":
+            self.current_expression = "0"
+        elif self.current_expression == "Error":
+            self.current_expression = "0"
         self.update_label()
 
     def create_backspace_button(self):
@@ -379,14 +396,14 @@ class Calculator:
 
     def tan(self):
         try:
-            if eval(self.current_expression) == 45:
-                result = float(
-                    round(math.tan(math.radians(eval(self.current_expression))))
-                )
+            if (
+                eval(self.current_expression) % 90 == 0
+                and eval(self.current_expression) % 180 != 0
+                and eval(self.current_expression) != 0
+            ):
+                result = "Error"
             else:
-                result = float(
-                    round(math.tan(math.radians(eval(self.current_expression))))
-                )
+                result = math.tan(math.radians(eval(self.current_expression)))
 
             self.current_expression = str(result)
         except Exception as e:

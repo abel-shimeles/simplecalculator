@@ -1,7 +1,16 @@
 import json
+import os
+
 
 def get_settings():
-    with open("settings.json", "r") as file:
+    # Get the directory where this script is located
+    script_dir = os.path.dirname(__file__)
+
+    # Construct the absolute path to the settings.json file
+    settings_path = os.path.join(script_dir, "..", "settings", "settings.json")
+
+    # Open and read the settings.json file
+    with open(settings_path, "r") as file:
         data = json.load(file)
 
         settings = {
@@ -10,7 +19,6 @@ def get_settings():
             "digits_font_style": tuple(data["fonts"]["DIGITS_FONT_STYLE"]),
             "default_font_style": tuple(data["fonts"]["DEFAULT_FONT_STYLE"]),
             "operators_font_style": tuple(data["fonts"]["OPERATORS_FONT_STYLE"]),
-
             "special_characters_color": data["colors"]["SPECIAL_CHARACTERS"],
             "digits_color": data["colors"]["DIGITS"],
             "equals_color": data["colors"]["EQUALS"],
