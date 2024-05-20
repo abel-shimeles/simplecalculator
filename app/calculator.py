@@ -8,8 +8,16 @@ class Calculator:
     def __init__(self):
         self.window = tk.Tk()
         self.window.geometry("500x677")
-        self.window.resizable(0, 0)
+        self.window.resizable(True, True)
         self.window.title("Calculator")
+
+        original_width = 500
+        original_height = 677
+        min_width = int(original_width * 0.85)
+        min_height = int(original_height * 0.85)
+
+        self.window.wm_minsize(min_width, min_height)
+
         icon = tk.PhotoImage(file="favicon.png")
         self.window.iconphoto(True, icon)
         self.settings = get_settings()
@@ -87,7 +95,6 @@ class Calculator:
         self.create_two_power_button()
         self.create_euler_button()
         self.create_euler_power_button()
-
     def create_display_labels(self):
         total_label = tk.Label(
             self.display_frame,
@@ -121,12 +128,13 @@ class Calculator:
         return frame
 
     def add_to_expression(self, value):
-        if self.current_expression[0] == "0":
-            self.current_expression = ""
-            self.current_expression += str(value)
-        else:
-            self.current_expression += str(value)
-        self.update_label()
+        if len(self.total_expression) < 40:
+            if self.current_expression[0] == "0":
+                self.current_expression = ""
+                self.current_expression += str(value)
+            else:
+                self.current_expression += str(value)
+            self.update_label()
 
     def create_digit_buttons(self):
         for digit, grid_value in self.digits.items():
@@ -142,12 +150,18 @@ class Calculator:
             button.grid(row=grid_value[0], column=grid_value[1], sticky=tk.NSEW)
 
     def append_operator(self, operator):
-        self.current_expression += operator
-        self.total_expression += self.current_expression
-        self.current_expression, removed_operator = split_strings(self.total_expression)
-        self.update_total_label()
-        self.update_label()
-        # self.current_expression = "0"
+
+        if len(self.total_expression) <= 40:
+            self.current_expression += operator
+            self.total_expression += self.current_expression
+            self.current_expression, removed_operator = split_strings(self.total_expression)
+            self.update_total_label()
+            self.update_label()
+        else:
+            maximum = self.create_maximum_operations_label()
+
+            return maximum
+
     def create_operator_buttons(self):
         i = 2
         for operator, symbol in self.operations.items():
@@ -225,8 +239,10 @@ class Calculator:
         button.grid(row=0, column=4, sticky=tk.NSEW)
 
     def evaluate(self):
-        self.total_expression += self.current_expression
-        self.update_total_label()
+
+        if not ("Error" in self.current_expression):
+            self.total_expression += self.current_expression
+            self.update_total_label()
         try:
             self.current_expression = str(eval(self.total_expression))
             self.total_expression = ""
@@ -311,10 +327,11 @@ class Calculator:
         button_close.grid(row=1, column=4, sticky=tk.NSEW)
 
     def plus_minus(self):
-        if self.current_expression.startswith("-"):
-            self.current_expression = self.current_expression[1:]
-        else:
-            self.current_expression = "-" + self.current_expression
+        if self.current_expression != "0":
+            if self.current_expression.startswith("-"):
+                self.current_expression = self.current_expression[1:]
+            else:
+                self.current_expression = "-" + self.current_expression
         self.update_label()
 
     def create_plus_minus_button(self):
@@ -589,6 +606,19 @@ class Calculator:
             command=self.factorial,
         )
         button.grid(row=2, column=4, sticky=tk.NSEW)
+
+    def create_maximum_operations_label(self):
+        label = tk.Label(
+            self.buttons_frame,
+            text="maximum operations",
+            bg="gray",
+            fg="white",
+            font=self.settings["small_font_style"],
+            borderwidth=10,
+        )
+        label.grid(row=4, column=2, columnspan=3)
+
+        label.after(2000, label.destroy)
 
     def run(self):
         self.window.mainloop()
