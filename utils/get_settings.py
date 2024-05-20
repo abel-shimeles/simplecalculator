@@ -1,15 +1,12 @@
-import json
 import os
+import json
 
 
 def get_settings():
-    # Get the directory where this script is located
     script_dir = os.path.dirname(__file__)
 
-    # Construct the absolute path to the settings.json file
     settings_path = os.path.join(script_dir, "..", "settings", "settings.json")
 
-    # Open and read the settings.json file
     with open(settings_path, "r") as file:
         data = json.load(file)
 

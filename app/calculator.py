@@ -2,13 +2,17 @@ import math
 import tkinter as tk
 from utils.get_settings import get_settings
 from utils.split_strings import split_strings
+from utils.add_to_history import add_to_history
+from utils.read_history import read_history
+from utils.clear_history import clear_history
+from functools import partial
 
 
 class Calculator:
     def __init__(self):
         self.window = tk.Tk()
         self.window.geometry("500x677")
-        self.window.resizable(True, True)
+        self.window.resizable(0, 0)
         self.window.title("Calculator")
 
         original_width = 500
@@ -20,7 +24,9 @@ class Calculator:
 
         icon = tk.PhotoImage(file="favicon.png")
         self.window.iconphoto(True, icon)
+        self.history = read_history()
         self.settings = get_settings()
+        self.control_history = False
 
         self.total_expression = ""
         self.current_expression = "0"
@@ -51,10 +57,12 @@ class Calculator:
             self.buttons_frame.rowconfigure(x, weight=1)
             self.buttons_frame.columnconfigure(x, weight=1)
 
+        # self.history_frame = self.create_history_frame()
         self.create_digit_buttons()
         self.create_operator_buttons()
         self.create_special_buttons()
         self.bind_keys()
+        self.create_history_icon()
 
     def bind_keys(self):
         self.window.bind("<Return>", lambda event: self.evaluate())
@@ -95,6 +103,7 @@ class Calculator:
         self.create_two_power_button()
         self.create_euler_button()
         self.create_euler_power_button()
+
     def create_display_labels(self):
         total_label = tk.Label(
             self.display_frame,
@@ -154,7 +163,9 @@ class Calculator:
         if len(self.total_expression) <= 40:
             self.current_expression += operator
             self.total_expression += self.current_expression
-            self.current_expression, removed_operator = split_strings(self.total_expression)
+            self.current_expression, removed_operator = split_strings(
+                self.total_expression
+            )
             self.update_total_label()
             self.update_label()
         else:
@@ -217,7 +228,7 @@ class Calculator:
 
     def sqrt(self):
         try:
-            if eval(self.current_expression) >= 0: 
+            if eval(self.current_expression) >= 0:
                 self.current_expression = str(eval(f"{self.current_expression}**0.5"))
             else:
                 self.current_expression = "Error"
@@ -245,6 +256,8 @@ class Calculator:
             self.update_total_label()
         try:
             self.current_expression = str(eval(self.total_expression))
+            add_to_history(self.total_expression, self.current_expression)
+            self.history = read_history()
             self.total_expression = ""
         except Exception as e:
             self.current_expression = "Error"
@@ -284,12 +297,22 @@ class Calculator:
         self.label.config(text=self.current_expression[:12])
 
     def backspace(self):
-        if len(self.current_expression) > 1 and self.current_expression != "0" and self.current_expression != "Error":
+        if (
+            len(self.current_expression) > 1
+            and self.current_expression != "0"
+            and self.current_expression != "Error"
+        ):
             self.current_expression = self.current_expression[:-1]
-        elif self.current_expression == "0" or len(self.current_expression) <= 1 and self.current_expression != "Error":
+        elif (
+            self.current_expression == "0"
+            or len(self.current_expression) <= 1
+            and self.current_expression != "Error"
+        ):
             self.current_expression = "0"
-        elif self.current_expression == "Error":
+        elif "Error" in self.current_expression:
             self.current_expression = "0"
+            self.total_expression = ""
+            self.update_total_label()
         self.update_label()
 
     def create_backspace_button(self):
@@ -619,6 +642,137 @@ class Calculator:
         label.grid(row=4, column=2, columnspan=3)
 
         label.after(2000, label.destroy)
+
+    def create_history_frame(
+        self,
+    ):
+
+        frame = tk.Frame(self.buttons_frame, background="black")
+        frame.grid(row=0, column=1, rowspan=7, columnspan=5, sticky=tk.NSEW)
+        return frame
+
+    def create_history_buttons(self, flag):
+
+        if flag == True:
+            history_frame = self.create_history_frame()
+            row = 0
+
+            if self.history != "No History":
+                for total_expression, current_expression in self.history.items():
+                    button = tk.Button(
+                        history_frame,
+                        text=f"{total_expression}\n{current_expression}",
+                        bg="black",
+                        fg=self.settings["label_color"],
+                        font=self.settings["default_font_style"],
+                        borderwidth=0,
+                        command=partial(
+                            self.change_history_values,
+                            total_expression,
+                            current_expression,
+                        ),
+                    )
+
+                    button.grid(
+                        row=row,
+                        column=1,
+                        columnspan=5,
+                        sticky=tk.NSEW,
+                    )
+                    row += 3
+
+                    clear_history_icon = tk.PhotoImage(file="clear_history_icon.png")
+
+                    clear_history_button = tk.Button(
+                        self.window,
+                        image=clear_history_icon,
+                        command=self.clear_history_values,
+                        bg=self.settings["display_labels_color"],
+                        borderwidth=0,
+                    )
+                    clear_history_button.image = clear_history_icon
+
+                    button_width = clear_history_icon.width()
+                    button_height = clear_history_icon.height()
+                    window_width = self.window.winfo_width()
+                    window_height = self.window.winfo_height()
+
+                    button_x = window_width - button_width - 20
+                    button_y = window_height - button_height - 20
+
+                    clear_history_button.place(x=button_x, y=button_y)
+                    self.clear_history_button = clear_history_button
+                    self.history_frame = history_frame
+            else:
+                frame = tk.Frame(history_frame, bg="black")
+                frame.pack(expand=True, fill="both")
+                label = tk.Label(
+                    frame,
+                    text="No History",
+                    fg="white",
+                    bg="black",
+                    font=self.settings["default_font_style"],
+                )
+                label.pack()
+                label.place(x=175, y=10)
+
+                clear_history_icon = tk.PhotoImage(file="clear_history_icon.png")
+
+                clear_history_button = tk.Button(
+                    self.window,
+                    image=clear_history_icon,
+                    command=self.clear_history_values,
+                    bg=self.settings["display_labels_color"],
+                    borderwidth=0,
+                )
+                clear_history_button.image = clear_history_icon
+
+                button_width = clear_history_icon.width()
+                button_height = clear_history_icon.height()
+                window_width = self.window.winfo_width()
+                window_height = self.window.winfo_height()
+
+                button_x = window_width - button_width - 20
+                button_y = window_height - button_height - 20
+
+                clear_history_button.place(x=button_x, y=button_y)
+                self.clear_history_button = clear_history_button
+                self.history_frame = history_frame
+                self.clear_history_button.destroy()
+
+        else:
+            self.history_frame.destroy()
+            self.clear_history_button.destroy()
+
+    def change_history_values(self, total, current):
+        self.total_expression = total
+        self.current_expression = current
+        self.update_label()
+        self.update_total_label()
+
+    def clear_history_values(self):
+        clear_history()
+        self.history = read_history()
+        self.control_history = not self.control_history
+        self.clear_history_button.destroy()
+        self.history_frame.destroy()
+
+    def control_history_frame(self):
+        self.control_history = not self.control_history
+        self.create_history_buttons(self.control_history)
+
+    def create_history_icon(self):
+        history_icon = tk.PhotoImage(file="history_icon.png")
+
+        history_button = tk.Button(
+            self.window,
+            image=history_icon,
+            command=self.control_history_frame,
+            bg=self.settings["display_labels_color"],
+            borderwidth=0,
+        )
+        history_button.image = history_icon
+        history_button.place(x=20, y=20)
 
     def run(self):
         self.window.mainloop()
