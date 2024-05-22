@@ -12,7 +12,7 @@ class Calculator:
     def __init__(self):
         self.window = tk.Tk()
         self.window.geometry("500x677")
-        self.window.resizable(0, 0)
+        self.window.resizable(True, True)
         self.window.title("Calculator")
 
         original_width = 500
@@ -137,7 +137,7 @@ class Calculator:
         return frame
 
     def add_to_expression(self, value):
-        if len(self.total_expression) < 40:
+        if len(self.total_expression) < 60:
             if self.current_expression[0] == "0":
                 self.current_expression = ""
                 self.current_expression += str(value)
@@ -160,7 +160,7 @@ class Calculator:
 
     def append_operator(self, operator):
 
-        if len(self.total_expression) <= 40:
+        if len(self.total_expression) <= 60:
             self.current_expression += operator
             self.total_expression += self.current_expression
             self.current_expression, removed_operator = split_strings(
@@ -643,9 +643,7 @@ class Calculator:
 
         label.after(2000, label.destroy)
 
-    def create_history_frame(
-        self,
-    ):
+    def create_history_frame(self):
 
         frame = tk.Frame(self.buttons_frame, background="black")
         frame.grid(row=0, column=1, rowspan=7, columnspan=5, sticky=tk.NSEW)
@@ -655,13 +653,15 @@ class Calculator:
 
         if flag == True:
             history_frame = self.create_history_frame()
+            self.history_frame = history_frame
+
             row = 0
 
             if self.history != "No History":
                 for total_expression, current_expression in self.history.items():
                     button = tk.Button(
                         history_frame,
-                        text=f"{total_expression}\n{current_expression}",
+                        text=f"operation: {total_expression}\t result: {current_expression}",
                         bg="black",
                         fg=self.settings["label_color"],
                         font=self.settings["default_font_style"],
@@ -684,23 +684,24 @@ class Calculator:
                     clear_history_icon = tk.PhotoImage(file="clear_history_icon.png")
 
                     clear_history_button = tk.Button(
-                        self.window,
+                        self.history_frame,
                         image=clear_history_icon,
                         command=self.clear_history_values,
-                        bg=self.settings["display_labels_color"],
+                        bg="black",
+                        fg="gray",
                         borderwidth=0,
                     )
                     clear_history_button.image = clear_history_icon
 
                     button_width = clear_history_icon.width()
                     button_height = clear_history_icon.height()
-                    window_width = self.window.winfo_width()
-                    window_height = self.window.winfo_height()
+                    window_width = self.history_frame.winfo_width()
+                    window_height = self.history_frame.winfo_height()
 
                     button_x = window_width - button_width - 20
                     button_y = window_height - button_height - 20
 
-                    clear_history_button.place(x=button_x, y=button_y)
+                    clear_history_button.place(x=375, y=450)
                     self.clear_history_button = clear_history_button
                     self.history_frame = history_frame
             else:
@@ -716,26 +717,28 @@ class Calculator:
                 label.pack()
                 label.place(x=175, y=10)
 
+
                 clear_history_icon = tk.PhotoImage(file="clear_history_icon.png")
 
                 clear_history_button = tk.Button(
-                    self.window,
+                    self.history_frame,
                     image=clear_history_icon,
                     command=self.clear_history_values,
-                    bg=self.settings["display_labels_color"],
+                    bg="black",
+                    fg="gray",
                     borderwidth=0,
                 )
                 clear_history_button.image = clear_history_icon
 
                 button_width = clear_history_icon.width()
                 button_height = clear_history_icon.height()
-                window_width = self.window.winfo_width()
-                window_height = self.window.winfo_height()
+                window_width = self.history_frame.winfo_width()
+                window_height = self.history_frame.winfo_height()
 
                 button_x = window_width - button_width - 20
                 button_y = window_height - button_height - 20
 
-                clear_history_button.place(x=button_x, y=button_y)
+                clear_history_button.place(x=350, y=450)
                 self.clear_history_button = clear_history_button
                 self.history_frame = history_frame
                 self.clear_history_button.destroy()
