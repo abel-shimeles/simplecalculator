@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 import math
 import tkinter as tk
+from utils.get_images import get_images
 from utils.get_settings import get_settings
 from utils.split_strings import split_strings
 from utils.add_to_history import add_to_history
@@ -22,7 +25,9 @@ class Calculator:
 
         self.window.wm_minsize(min_width, min_height)
 
-        icon = tk.PhotoImage(file="favicon.png")
+        self.images = get_images()
+
+        icon = tk.PhotoImage(file=self.images["favicon_path"])
         self.window.iconphoto(True, icon)
         self.history = read_history()
         self.settings = get_settings()
@@ -57,7 +62,6 @@ class Calculator:
             self.buttons_frame.rowconfigure(x, weight=1)
             self.buttons_frame.columnconfigure(x, weight=1)
 
-        # self.history_frame = self.create_history_frame()
         self.create_digit_buttons()
         self.create_operator_buttons()
         self.create_special_buttons()
@@ -681,7 +685,9 @@ class Calculator:
                     )
                     row += 3
 
-                    clear_history_icon = tk.PhotoImage(file="clear_history_icon.png")
+                    clear_history_icon = tk.PhotoImage(
+                        file=self.images["clear_history_path"]
+                    )
 
                     clear_history_button = tk.Button(
                         self.history_frame,
@@ -717,8 +723,9 @@ class Calculator:
                 label.pack()
                 label.place(x=175, y=10)
 
-
-                clear_history_icon = tk.PhotoImage(file="clear_history_icon.png")
+                clear_history_icon = tk.PhotoImage(
+                    file=self.images["clear_history_path"]
+                )
 
                 clear_history_button = tk.Button(
                     self.history_frame,
@@ -765,7 +772,7 @@ class Calculator:
         self.create_history_buttons(self.control_history)
 
     def create_history_icon(self):
-        history_icon = tk.PhotoImage(file="history_icon.png")
+        history_icon = tk.PhotoImage(file=self.images["history_icon_path"])
 
         history_button = tk.Button(
             self.window,

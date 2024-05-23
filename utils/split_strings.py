@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 def split_string_function(s):
     digits = ""
     operators = "+-*/x"

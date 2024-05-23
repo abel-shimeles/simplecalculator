@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import json
 
@@ -13,4 +15,3 @@ def read_history():
             return "No History"
 
     return data
-
